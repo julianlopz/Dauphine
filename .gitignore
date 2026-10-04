@@ -1,0 +1,9 @@
+#Virtual environments
+.venv/
+.env/
+
+#VS code related
+.vscode/
+
+#Specific files
+unsupervised_learning/project/data/output/v2/2.clean_df_v2.csv

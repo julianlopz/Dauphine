@@ -1,0 +1,11 @@
+{
+  "best_params": {
+    "learning_rate": 0.012184186502221764,
+    "max_iter": 447,
+    "max_leaf_nodes": 80,
+    "max_depth": 10,
+    "min_samples_leaf": 13,
+    "l2_regularization": 7.072114131472227
+  },
+  "best_cv_roc_auc": 0.7891182300104377
+}
