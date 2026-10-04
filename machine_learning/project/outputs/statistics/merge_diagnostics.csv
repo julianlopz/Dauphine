@@ -1,0 +1,9 @@
+stage,rows,columns,missing_cells
+persons,50046,10,0
+after employment merge,50046,12,25950
+after current job merge,50046,24,366378
+after retired former merge,50046,28,476775
+after retired jobs merge,50046,40,905765
+after pension merge,50046,42,944567
+after club merge,50046,45,1031951
+after geography merge,50046,58,1031951

@@ -1,0 +1,2 @@
+column,Q1,Q3,IQR,lower_bound,upper_bound,outliers,outlier_%
+Age_2020,33.0,66.0,33.0,-16.5,115.5,0,0.0
