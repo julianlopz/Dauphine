@@ -1,0 +1,17 @@
+#Virtual environments
+.venv/
+.env/
+
+#VS code related
+.vscode/
+
+#WSL files
+*:zone.idenfier
+
+#Specific files
+unsupervised_learning/project/data/output/v2/2.clean_df_v2.csv
+unsupervised_learning/project/data/output/v1/2.clean_df_v2.csv
+unsupervised_learning/project/data/output/v1/clean_df.csv
+unsupervised_learning/project/data/input_raw/*.csv
+unsupervised_learning/project/data/output/v2/1.full_filtered_df.parquet
+unsupervised_learning/project/data/output/v2/2.clean_df_v2.parquet
