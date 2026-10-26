@@ -5,6 +5,9 @@
 #VS code related
 .vscode/
 
+#WSL files
+*:zone.idenfier
+
 #Specific files
 unsupervised_learning/project/data/output/v2/2.clean_df_v2.csv
 unsupervised_learning/project/data/output/v1/2.clean_df_v2.csv
