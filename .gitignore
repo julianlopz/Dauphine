@@ -15,3 +15,6 @@ unsupervised_learning/project/data/output/v1/clean_df.csv
 unsupervised_learning/project/data/input_raw/*.csv
 unsupervised_learning/project/data/output/v2/1.full_filtered_df.parquet
 unsupervised_learning/project/data/output/v2/2.clean_df_v2.parquet
+
+#Unsupervised learning final version maps
+unsupervised_learning/project/final_notebook/*.html
