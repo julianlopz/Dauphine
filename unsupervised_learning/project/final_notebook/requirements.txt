@@ -1,0 +1,30 @@
+# Libraries needed to run both notebooks in this folder:
+#   1.data_read_cleaning.ipynb
+#   2.analysis_clustering.ipynb
+# Versions are the ones the notebooks were run with (Python 3.14.4).
+# Install with: pip install -r requirements.txt
+
+# Data handling
+polars==1.44.2
+pyarrow==25.0.1
+pandas==3.0.6
+numpy==2.5.3
+
+# Machine learning / statistics
+scipy==1.18.1
+scikit-learn==1.9.1
+umap-learn==0.5.12
+
+# Graphs / community detection
+networkx==3.6.1
+igraph==1.0.0
+leidenalg==0.12.0
+
+# Plots and maps
+matplotlib==3.11.2
+seaborn==0.13.2
+folium==0.20.0
+
+# Running the notebooks (Jupyter kernel)
+ipykernel==7.3.0
+jupyter==1.1.1
