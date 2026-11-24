@@ -7,7 +7,7 @@ import os
 import json   # [ADDED] to read the train level proportions saved by the notebook
 from glob import glob
 #import matplotlib.pyplot as plt
-import cv2
+#import cv2
 import numpy as np
 from PIL import Image
 import albumentations as A
@@ -36,9 +36,17 @@ model_test.classifier[1] = nn.Linear(model_test.classifier[1].in_features, NUM_O
 #Load the weights
 #################
 
+#Files path (relative to the project folder, so the script works from any working directory)
+PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+model_location = os.path.join(PROJECT_DIR, "model/v2_efficientnet_v2_s/best_model_v2_efficientnet_v2_s.pth")
+
+proportion_location = os.path.join(PROJECT_DIR, "model/v2_efficientnet_v2_s/train_level_props.json")
+
+
 # [CHANGED] best_model_v1.pth -> best_model_v2.pth (download best_model.pth from Kaggle and rename it)
 # map_location works with and without cuda
-model_test.load_state_dict(torch.load("model/best_model_v2.pth", map_location=device))
+model_test.load_state_dict(torch.load(model_location, map_location=device))
 
 
 model_test.to(device)
@@ -81,11 +89,13 @@ class TestDataset(Dataset):
         return image, image_name
 
 #Load images
-img_dir_test = "Data/test/test_edited_images/edited"
+img_dir_test = os.path.join(PROJECT_DIR, "data/test/test_edited_images/edited")
 
 test_paths = sorted(
     glob(os.path.join(img_dir_test, "*.jpeg"))
 )
+if not test_paths:
+    raise FileNotFoundError(f"No .jpeg images found in {img_dir_test}")
 print(len(test_paths))
 print(test_paths[:3])
 
@@ -126,7 +136,7 @@ with torch.no_grad():
 # [ADDED] Make the predicted distribution follow the train distribution.
 # The proportion of each level in the full train set is computed in the notebook and saved to
 # train_level_props.json (download it from the Kaggle output together with best_model.pth).
-with open("model/train_level_props.json") as f:
+with open(proportion_location) as f:
     train_level_props = np.array(json.load(f)["proportions"])
 print("Train level proportions:", np.round(train_level_props, 4))
 
@@ -172,6 +182,7 @@ submission["image"] = submission["image"].str.replace(r"_edited$", "", regex=Tru
 
 # [CHANGED] v1 -> v2 output file
 submission.to_csv(
-    "predictions/submission_local_v2.csv",
+    os.path.join(PROJECT_DIR, "predictions/submission_local_v2.csv"),
     index=False
 )
+
