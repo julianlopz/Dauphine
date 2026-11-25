@@ -1,29 +1,29 @@
 ###################################################
-# 2. Processing des images d'entrainement et test
+# 2. Prétraitement des images d'entraînement et de test
 ###################################################
 
-# Vu qu'on a des images tres heterogenes et qu'on doir devoir transformer tous les images vers 
-# des images standarises, on va utiliser ce fichier a ce effet.
+# Vu qu'on a des images très hétérogènes et qu'on doit transformer toutes les images en
+# images standardisées, on va utiliser ce fichier à cet effet.
 
-# On a constate precedement que les images
-#   - all have large black borders (~25-53% of the pixels are black),
-#   - have very different sizes (1792x1184 up to 4928x3264, mean ~3736x2532),
-#   - have very different brightness (many are too dark) and some are blurry.
+# On a constaté précédemment que les images :
+#   - ont toutes de grandes bordures noires (~15-75 % des pixels sont noirs),
+#   - ont des tailles très différentes (de 1792x1184 à 4928x3264, moyenne ~3736x2532),
+#   - ont une luminosité très variable (beaucoup sont trop sombres) et certaines sont floues.
 
-# On veut donc resoudre ces problemes avant l'etape de train/predict. On va:
-#   1) cropping the black border around the retina,
-#   2) resizing every image to the same 512x512 resolution,
-#   3) applying Ben Graham's preprocessing (local contrast normalisation).
-#  
+# On veut donc résoudre ces problèmes avant l'étape d'entraînement/prédiction. On va :
+#   1) recadrer l'image pour enlever la bordure noire autour de la rétine,
+#   2) redimensionner chaque image à la même résolution de 512x512,
+#   3) appliquer le prétraitement de Ben Graham (normalisation locale du contraste).
+#
 
-# A la fin on aura une image edite pour chaque image de las base de donnees de taille 512x512 sans
-# bordure noir, avec le meme niveau de luminosite qui seront alors utilises lors de l'entrainement du
-# modele dans l'etape 3 et 4
+# À la fin, on aura une image éditée pour chaque image de la base de données, de taille 512x512, sans
+# bordure noire, avec le même niveau de luminosité, qui sera ensuite utilisée lors de l'entraînement du
+# modèle dans les étapes 3 et 4.
 
 
 
 ###########################
-# Libraries
+# Bibliothèques
 ###########################
 
 import cv2
@@ -36,15 +36,15 @@ from pathlib import Path
 # Variables
 ###########################
 
-# Path vers les images brutes: 
+# path images brutes :
 input_path = Path("Data/og_images/test")
 
-# Path vers le dossier output
+# path dossier de sortie
 output_path = Path("Data/test/test_edited_images/edited")
 
 
 ##################################
-# Load images to test if needed
+# Charger des images de test si besoin
 ##################################
 
 #img = cv2.imread(input_path)
@@ -52,20 +52,20 @@ output_path = Path("Data/test/test_edited_images/edited")
 
 
 ################################
-# Functions
+# Fonctions
 ################################
 
 #---------------
-# Image crop
+# Recadrage de l'image
 #---------------
 
-# Ici on va enlever le bordure noir des images en utilisant le grayscale et un seuil pour enlever les
-# parties les plus noirs et donc pas outiles
+# Ici on va enlever la bordure noire des images en utilisant le niveau de gris et un seuil pour enlever les
+# parties les plus noires, et donc pas utiles.
 
 def crop_retina(img):
     gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
-    #define black threshold to crop black border
+    # Définir le seuil de noir pour recadrer la bordure noire
     _, thresh = cv2.threshold(gray, 10, 255, cv2.THRESH_BINARY)
 
     coords = cv2.findNonZero(thresh)
@@ -80,12 +80,12 @@ def crop_retina(img):
 
 
 #-----------------------------
-# Ben graham preprocessing
+# Prétraitement de Ben Graham
 #-----------------------------
 
-# Avec le preprocessing Ben graham on va homogeneiser la luminosite des images + enlever les bords pour
-# faire monter la nettete des images autant que possible pour avoir les images le plus clean possibles
-# A la fin on aura des images avec un grayscale uniforme et avec les lessions plus visibles qu'avant
+# Avec le prétraitement de Ben Graham, on va homogénéiser la luminosité des images + 
+# augmenter la netteté des images autant que possible, afin d'avoir les images les plus propres possible.
+# À la fin, on aura des images avec un fond gris uniforme et avec les lésions plus visibles qu'avant.
 
 def ben_preprocess(img, sigma=10):
     return cv2. addWeighted(
@@ -97,12 +97,12 @@ def ben_preprocess(img, sigma=10):
     )
 
 #-----------------------------
-# Launch all transformations
+# Lancer toutes les transformations
 #-----------------------------
 
-# Ici c'est la pipeline entiere, avec ce fonction on va charger l'image, transformer de couleur vers
-# grayscale, enlever la bordure noire, changer la taille, appliquer la transformation Ben graham et 
-# sauvegarder la nouvelle image
+# Ici, c'est le pipeline entier : avec cette fonction, on va charger l'image, la transformer de couleur de BGR
+# vers RGB, enlever la bordure noire, changer la taille, appliquer la transformation de Ben Graham et
+# sauvegarder la nouvelle image.
 
 def process_image(input_path, output_path):
     img = cv2.imread(str(input_path))
@@ -113,24 +113,24 @@ def process_image(input_path, output_path):
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    # Crop
+    # Recadrage
     img = crop_retina(img)
 
-    # Resize
+    # Redimensionnement
     img = cv2.resize(img, (512,512))
 
-    # Ben graham preprocessing
+    # Prétraitement de Ben Graham
     img = ben_preprocess(img)
 
-    # Save image
+    # Sauvegarde de l'image
     cv2.imwrite(str(output_path), cv2.cvtColor(img, cv2.COLOR_RGB2BGR))
 
 
 #######################
-# Loop over all images
+# Boucle sur toutes les images
 #######################
 
-# On va en suite appliquer la pipeline a toutes les images train et test.
+# On va ensuite appliquer le pipeline à toutes les images d'entraînement et de test.
 
 for image_path in input_path.iterdir():
     if image_path.suffix.lower() not in {".jpg", ".jpeg"}:

@@ -1,32 +1,32 @@
 ###########################################################
-# 4. Prediction des images test avec le modele entraine
+# 4. Prédiction des images de test avec le modèle entraîné
 ###########################################################
 
-# Finalement, une fois que notre modele est entraine, on peut se concentrer sur la derniere partie
-# de notre projet, la prediction des images du dataset test. On va utiliser ce fichier pour le faire
-# et on va suivre les etapes suivantes:
+# Finalement, une fois que notre modèle est entraîné, on peut se concentrer sur la dernière partie
+# de notre projet : la prédiction des images du dataset de test. On va utiliser ce fichier pour le faire
+# et on va suivre les étapes suivantes :
 
-#   1) rebuild the EfficientNetV2-S regressor trained in 3.model_train_retinopathy.ipynb
-#      and load its best weights
-#   2) predict a continuous severity score for each preprocessed test image
-#      (images from dataset test produced by 2.img_preprocessing.py),
-#   3) convert the scores into levels 0-4 so that the predicted level
-#      distribution equals the distribution of the full train set,
-#   4) export the Kaggle submission file predictions/submission_local_v2.csv.
+#   1) reconstruire le régresseur EfficientNetV2-S entraîné dans 3.model_train_retinopathy.ipynb
+#      et charger ses meilleurs poids,
+#   2) prédire un score de sévérité continu pour chaque image de test prétraitée
+#      (images du dataset de test produites par 2.img_preprocessing.py),
+#   3) convertir les scores en niveaux 0-4 de sorte que la distribution des niveaux prédits
+#      soit égale à la distribution de l'ensemble complet d'entraînement,
+#   4) exporter le fichier de soumission Kaggle predictions/submission_local_v2.csv.
 
-# L'idee c'est de obtenir a la fin un fichier csv contenant les predictions des 53,576 images de test
-# et que la classification de ces images suit la meme distribution vu lors de la exploration initial
-# des donnees
+# L'idée, c'est d'obtenir à la fin un fichier CSV contenant les prédictions des 53 576 images de test,
+# et que la classification de ces images suive la même distribution que celle vue lors de l'exploration
+# initiale des données.
 
 
 
 ###########################
-# Libraries
+# Bibliothèques
 ###########################
 
 import pandas as pd
 import os
-import json  
+import json
 from glob import glob
 #import matplotlib.pyplot as plt
 #import cv2
@@ -41,7 +41,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 
-# Use GPU or CPU
+# Utiliser le GPU ou le CPU
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 
@@ -49,16 +49,16 @@ print(device)
 # Variables
 ###########################
 
-#To be changed if needed
+# À modifier si besoin
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 #################
-#Load model
+# Charger le modèle
 #################
 
-# On veut creer exactement le meme modele qui a ete selectione lors de l'entrainement comme le 
-# meilleur modele pour faire la prediction
+# On veut créer exactement le même modèle que celui qui a été sélectionné comme le meilleur
+# lors de l'entraînement, pour faire la prédiction.
 
 model_test = efficientnet_v2_s(weights=None)
 
@@ -66,32 +66,32 @@ NUM_OUTPUTS = 1
 model_test.classifier[1] = nn.Linear(model_test.classifier[1].in_features, NUM_OUTPUTS)
 
 #################
-#Load the weights
+# Charger les poids
 #################
 
-# Import best weights downloaded from the Kaggle training run (best_model.pth).
+# Chemin vers les meilleurs poids téléchargés depuis l'entraînement sur Kaggle (best_model.pth).
 model_location = os.path.join(PROJECT_DIR, "model/v2_efficientnet_v2_s/best_model_v2_efficientnet_v2_s.pth")
 
-# Import JSON written by the training notebook with the level counts/proportions
-# of the full train set (35,126 images): [0.7348, 0.0695, 0.1507, 0.0249, 0.0202].
+# Chemin vers le JSON écrit par le notebook d'entraînement, avec les effectifs/proportions de chaque niveau
+# dans l'ensemble complet d'entraînement (35 126 images) : [0.7348, 0.0695, 0.1507, 0.0249, 0.0202].
 proportion_location = os.path.join(PROJECT_DIR, "model/v2_efficientnet_v2_s/train_level_props.json")
 
 model_test.load_state_dict(torch.load(model_location, map_location=device))
 
-# Load model to device previously selected
+# Charger le modèle sur le device sélectionné précédemment
 model_test.to(device)
 
-# eval() disables dropout and uses the BatchNorm running statistics
-# learned during training -> deterministic predictions.
+# eval() désactive le dropout et utilise les statistiques de BatchNorm
+# apprises pendant l'entraînement -> prédictions déterministes.
 model_test.eval()
 
 
 ################################
-# Functions
+# Fonctions
 ################################
 
-# On veut faire les memes transformations sur les images test que celles qu'on a fait sur les images
-# train: ImageNet normalisation + conversion to a tensor, no augmentation.
+# On veut faire les mêmes transformations sur les images de test que celles qu'on a faites sur les images
+# d'entraînement : normalisation ImageNet + conversion en tenseur, sans augmentation.
 
 valid_transform_test = A.Compose([
     A.Normalize(
@@ -104,11 +104,11 @@ valid_transform_test = A.Compose([
 
 
 ##################
-# Load images 
+# Charger les images
 ##################
 
 #--------------------------
-# Dataset of test images
+# Dataset des images de test
 #--------------------------
 class TestDataset(Dataset):
 
@@ -135,7 +135,7 @@ class TestDataset(Dataset):
 
 
 #---------------
-#Load images
+# Charger les images
 #---------------
 
 img_dir_test = os.path.join(PROJECT_DIR, "data/test/test_edited_images/edited")
@@ -156,10 +156,10 @@ test_dataset = TestDataset(
 
 
 #---------------
-# Data loader
+# DataLoader
 #---------------
 
-# Batches of 16 images; shuffle=False to keep the order of the names.
+# Lots (batches) de 16 images ; shuffle=False pour garder l'ordre des noms.
 test_loader = DataLoader(
     test_dataset,
     batch_size=16,
@@ -169,7 +169,7 @@ test_loader = DataLoader(
 
 
 ################################
-# Functions 2
+# Prediction
 ################################
 
 test_scores = []
@@ -191,12 +191,12 @@ with torch.no_grad():
 
 
 #--------------------------
-# Predicted distribution
+# Distribution prédite
 #--------------------------
 
-# On veut faire que les images predits suivent la meme distribution de class que les images train.
-# pour ca on va utiliser le fichier telecharge de kaggle qui nous donne la proportion des images train
-# par niveau de maladie 
+# On veut que les images prédites suivent la même distribution de classes que les images d'entraînement.
+# Pour ça, on va utiliser le fichier téléchargé depuis Kaggle qui nous donne la proportion des images
+# d'entraînement par niveau de maladie.
 
 with open(proportion_location) as f:
     train_level_props = np.array(json.load(f)["proportions"])
@@ -205,21 +205,21 @@ print("Train level proportions:", np.round(train_level_props, 4))
 
 
 #------------------------------------
-# Function used in the train step
+# Fonction utilisée dans l'étape d'entraînement
 #------------------------------------
 
-# Ici on va, meme que dans l'etape de entrainement:
-    # 1) sort the images from the lowest to the highest score
-    # 2) the lowest X0% get level 0, the next X1% get level 1, ..., the highest X4% get level 4,
-    # where X0..X4 are the proportions of each level in the train set.
+# Ici, on va, comme dans l'étape d'entraînement :
+    # 1) trier les images du score le plus bas au score le plus haut,
+    # 2) les X0 % les plus basses reçoivent le niveau 0, les X1 % suivantes le niveau 1, ..., les X4 % les plus hautes le niveau 4,
+    # où X0..X4 sont les proportions de chaque niveau dans l'ensemble d'entraînement.
 
 
 def scores_to_levels_by_distribution(scores, target_props):
     scores = np.asarray(scores, dtype=float)
     n = len(scores)
-    order = np.argsort(scores, kind="stable")                       # indices from lowest to highest score
-    bounds = np.round(np.cumsum(target_props) * n).astype(int)      # cumulative number of images per level
-    bounds[-1] = n                                                  # make sure every image gets a level
+    order = np.argsort(scores, kind="stable")                       # indices du score le plus bas au plus haut
+    bounds = np.round(np.cumsum(target_props) * n).astype(int)      # nombre cumulé d'images par niveau
+    bounds[-1] = n                                                  # s'assurer que chaque image reçoit un niveau
     levels = np.empty(n, dtype=int)
     start = 0
     for level, end in enumerate(bounds):
@@ -238,24 +238,23 @@ print(pd.DataFrame({
 
 
 ################################
-# Data export
+# Export des données
 ################################
 
-# Export results in csv
+# Exporter les résultats en CSV
 submission = pd.DataFrame(
     predictions,
     columns=["image", "level"]
 )
 
-# Remove the "_edited" suffix added by img_preprocessing.py so that the names match
-# the Kaggle submission format
+# Enlever le suffixe "_edited" ajouté par img_preprocessing.py pour que les noms correspondent
+# au format de soumission Kaggle
 submission["image"] = submission["image"].str.replace(r"_edited$", "", regex=True)
 
 
-# RESULTAT: predictions/submission_local_v2.csv (columns image, level),
-# 53,576 lignes: level 0 = 39,367 | 1 = 3,726 | 2 = 8,072 | 3 = 1,331 | 4 = 1,080.
+# RÉSULTAT : predictions/submission_local_v2.csv (colonnes image, level),
+# 53 576 lignes : niveau 0 = 39 367 | 1 = 3 726 | 2 = 8 072 | 3 = 1 331 | 4 = 1 080.
 submission.to_csv(
     os.path.join(PROJECT_DIR, "predictions/submission_local_v2.csv"),
     index=False
 )
-
